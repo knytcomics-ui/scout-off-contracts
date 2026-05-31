@@ -35,11 +35,12 @@ Manages the trusted validator registry and milestone approvals.
 | Function | Auth | Description |
 |----------|------|-------------|
 | `initialize(admin)` | admin | One-time setup |
-| `set_progress_contract(progress_contract)` | admin | Wire cross-contract link |
+| `set_progress_contract(progress_contract)` | admin | Wire cross-contract link (first call only; returns AlreadyConfigured on repeat) |
+| `update_progress_contract(progress_contract)` | admin | Re-wire cross-contract link after initial setup; emits `progress_contract_updated` |
 | `register_validator(wallet, credentials)` | admin | Add trusted validator |
 | `revoke_validator(wallet)` | admin | Deactivate validator |
-| `approve_milestone(validator_wallet, player_id, description, evidence_hash)` | validator | Record milestone (with ledger_sequence for audit) + cross-call progress.advance_level |
-| `get_milestone(player_id, index)` | — | Read a specific milestone |
+| `approve_milestone(validator_wallet, player_id, description, evidence_hash)` | validator | Record milestone (evidence_hash must start with "Qm" or "bafy", max 128 bytes; with ledger_sequence for audit) + cross-call progress.advance_level |
+| `get_milestone(player_id, index)` | — | Read a specific milestone; returns MilestoneNotFound if absent |
 | `get_milestone_count(player_id)` | — | Total milestones for a player |
 | `get_validator(wallet)` | — | Read validator record |
 | `is_active_validator(wallet)` | — | Boolean check |
@@ -53,6 +54,7 @@ Manages the trusted validator registry and milestone approvals.
 | `milestone_approved` | event_name, validator_address, milestone_index (u32) | player_id (u64), description (String), evidence_hash (String) | Emitted when a validator approves a player milestone with full milestone details |
 | `validator_registered` | event_name | validator_address | Emitted when a new validator is registered |
 | `validator_revoked` | event_name | validator_address | Emitted when a validator is deactivated |
+| `progress_contract_updated` | event_name | new_contract_address | Emitted when the progress contract address is updated via update_progress_contract |
 
 ---
 

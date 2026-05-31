@@ -533,6 +533,9 @@ Frontend and backend dependencies live in their respective repos (`scoutchain-fr
 | 9 | ContractPaused | Contract is paused | Emergency circuit breaker active | Monitor official channels; wait for admin to unpause |
 | 10 | Unauthorized | Caller is not authorized | Wrong account for admin operation | Confirm you are using the correct Stellar account |
 | 11 | Overflow | Arithmetic overflow in fee calculation | Extremely large XLM amount | Use amounts within safe i128 range |
+| 10 (verification) | ProgressCallFailed | Cross-contract call to progress contract failed | Progress contract returned an unexpected error | Check progress contract deployment and wiring |
+| 11 (verification) | AlreadyConfigured | Progress contract address already set | Calling `set_progress_contract` more than once | Use `update_progress_contract` for intentional re-wiring |
+| 12 (verification) | MilestoneNotFound | Milestone index does not exist for this player | Invalid player_id or index in `get_milestone` | Verify the index is within `get_milestone_count` range |
 
 ## Events
 
