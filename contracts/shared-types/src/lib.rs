@@ -183,6 +183,10 @@ pub trait AdminError {
     fn not_initialized() -> Self;
 }
 
+/// Maximum allowed registration cooldown: 7 days in seconds.
+/// Shared by `registration` and `verification` `set_reg_cooldown`.
+pub const MAX_REG_COOLDOWN_SECS: u64 = 7 * 24 * 60 * 60;
+
 /// Shared admin-authorization helper.
 ///
 /// Reads the stored admin `Address` from persistent storage using `admin_key`,
@@ -913,6 +917,35 @@ mod tests {
         assert_eq!(ProgressLevel::VerifiedIdentity as u32, 1);
         assert_eq!(ProgressLevel::PerformanceMilestones as u32, 2);
         assert_eq!(ProgressLevel::EliteTier as u32, 3);
+    }
+
+    const ALL_LEVELS: [ProgressLevel; 4] = [
+        ProgressLevel::Unverified,
+        ProgressLevel::VerifiedIdentity,
+        ProgressLevel::PerformanceMilestones,
+        ProgressLevel::EliteTier,
+    ];
+
+    #[test]
+    fn progress_level_derived_ord_matches_rank() {
+        for a in ALL_LEVELS.iter() {
+            for b in ALL_LEVELS.iter() {
+                assert_eq!(a.cmp(b), a.rank().cmp(&b.rank()), "{:?} vs {:?}", a, b);
+            }
+        }
+    }
+
+    #[test]
+    fn progress_level_next_is_rank_plus_one() {
+        for level in ALL_LEVELS.iter() {
+            match level.next() {
+                Some(next) => {
+                    assert_eq!(next.rank(), level.rank() + 1);
+                    assert!(next > *level);
+                }
+                None => assert_eq!(*level, ProgressLevel::EliteTier),
+            }
+        }
     }
 
     #[test]

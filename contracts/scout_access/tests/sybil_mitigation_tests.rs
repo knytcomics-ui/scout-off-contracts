@@ -492,3 +492,31 @@ fn test_wiring_rejects_non_scoutchain_and_wrong_kind_peers() {
     h.scout_access_client
         .set_registration_contract(&h.registration_client.address);
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Tests: deregistered scouts fail closed (issue #1641)
+// ─────────────────────────────────────────────────────────────────────────────
+
+#[test]
+fn test_deregistered_scout_is_rejected() {
+    use scoutchain_scout_access::ScoutAccessError;
+
+    let h = setup();
+    let scout_id = h
+        .registration_client
+        .get_scout_by_wallet(&h.scout1)
+        .scout_id;
+    h.registration_client.deregister_scout(&scout_id);
+
+    // A missing profile must not fall through to "allowed".
+    assert_eq!(
+        h.scout_access_client
+            .try_subscribe(&h.scout1, &SubscriptionTier::Basic),
+        Err(Ok(ScoutAccessError::ScoutNotRegistered))
+    );
+    // Other, still-registered scouts are unaffected.
+    assert!(h
+        .scout_access_client
+        .try_subscribe(&h.scout2, &SubscriptionTier::Basic)
+        .is_ok());
+}
